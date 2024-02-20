@@ -1,33 +1,118 @@
 <!DOCTYPE html>
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
 
-<style>
-</style>
-<textarea id="inputplayers" rows=18 cols=40></textarea>
-<p>Players: <span id="numplayers"></span></p>
+<div style="margin: auto; max-width: 800px; display: flex; flex-direction: column; gap: 2.2em;align-items: center;">
+	<div id="configScreen" style="padding:0.5em; background: orange; display: flex; flex-direction: column; width: 100%;">
+		<p>JUGADORES</p>
+		<textarea id="inputplayers" rows=18 cols=40>
+alberto
+blanca
+carlos
+david 
+eugenio 
+fernando 
+gerard
+hector
+ismael
+jordi
+kevin andres miguel
+luis miguel
+manuel
+nestor
+octavio
+paco
+		</textarea>
+		<p>Players: <span id="numplayers"></span></p>
+		<button id="start" style="padding:0.8em">START TOURNAMENT</button>
+	</div>
 
-<button id="start">START TOURNAMENT</button>
+	<div id="tournamentScreen" style="padding:0.5em; width: 100%; background: greenyellow; display: flex; flex-direction: column;"  >
+		<p>RONDA</p>
+		<div id="showCurrentMatches"></div>
+		<button style="padding:0.8em" id="save">SAVE SCORES</button>
+	</div>
 
+	<div id="classificacionScreen" style="padding:0.5em; width: 100%; background: violet; display: flex; flex-direction: column;"  >
+		<p>CLASIFICACION</p>
+
+	</div>
+</div>
 
 
 
 <script>
 
+
 let players = [];
 let matches = [];
 
+players = inputplayers.value.split('\n').filter(row => row.trim().length > 0);
+numplayers.innerText=players.length;
+
+shuffle();
+
 inputplayers.oninput = (e) => {
-	players = e.target.value.split('\n').filter(row => row.trim().length > 0);
+	players = inputplayers.value.split('\n').filter(row => row.trim().length > 0);
 	numplayers.innerText=players.length;
 }
 
 start.onclick = (e) => {
-	
+	shuffle();
 }
 
 
 function shuffle() {
-	const newmatch = {};
-	// random while(not)
+	const numMatches = Math.floor(players.length / 4);
+	const available = [...players];
+	const currentMatches = [];
+
+	while(currentMatches.length < numMatches){
+
+		const match = {};
+
+		let i=100;
+		while(i--) {
+			
+			match.p1 = getRandom(available);
+			match.p2 = getRandom(available);
+			match.p3 = getRandom(available);
+			match.p4 = getRandom(available);
+
+			if (currentMatches.find(m => compareMatches(match, m))) {
+				console.log("yeaaa");
+			} else {
+				break;
+			}
+		}
+		if (!match.p4) {
+			console.log("no se encontro jugador disponible.... :/")
+		}
+		currentMatches.push(match);
+	}
+	
+	let ih = "";
+	let i = 1;
+	for (const match of currentMatches) {
+		ih += `
+		<div style="margin-bottom:1em; background:lightgray; border:1px solid black; ">
+			<div>Pista ${i}</div>
+			<div style="text-align:center">
+				<div style="background:lightblue">${match.p1} - ${match.p2}</div>
+				<input style="padding:0.8em" type="number" min=0 max=100>
+			</div>
+			<div style="background:#ff4466; text-align:center">VS</div>
+			<div style="text-align:center">
+				<input type="number" min=0 max=100 style="padding:0.8em">
+				<div style="background:lightblue">${match.p3} - ${match.p4}</div>
+			</div>
+		</div>
+		`
+		i++;
+	}
+	showCurrentMatches.innerHTML = ih;
 }
 
 
@@ -35,6 +120,18 @@ function show(){
 
 
 }
+
+
+function getRandom(array) {
+	//return array[(Math.random() * array.length) | 0]
+	return array.splice((Math.random() * array.length) | 0, 1)[0]
+}
+
+function compareMatches(a,b) {
+	return a.p1===b.p1 && a.p2===b.p2 && a.p3===b.p3 && a.p4===b.p4
+}
+
 </script>
+
 
 
