@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+
+<style>
+</style>
+<textarea id="inputplayers" rows=18 cols=40></textarea>
+<p>Players: <span id="numplayers"></span></p>
+
+<button id="start">START TOURNAMENT</button>
+
+
+
+
+<script>
+
+let players = [];
+let matches = [];
+
+inputplayers.oninput = (e) => {
+	players = e.target.value.split('\n').filter(row => row.trim().length > 0);
+	numplayers.innerText=players.length;
+}
+
+start.onclick = (e) => {
+	
+}
+
+
+function shuffle() {
+	const newmatch = {};
+	// random while(not)
+}
+
+
+function show(){
+
+
+}
+</script>
+
+
