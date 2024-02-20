@@ -3,11 +3,7 @@
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
-
-<div style="font-family:sans;margin: auto; max-width: 800px; display: flex; flex-direction: column; gap: 2.2em;align-items: center;">
-	<div id="configScreen" style="padding:0.5em; background: orange; display: flex; flex-direction: column; width: 100%;">
-		<p>JUGADORES</p>
-		<textarea id="inputplayers" rows=18 cols=40>
+<!--
 alberto
 blanca
 carlos
@@ -24,6 +20,28 @@ manuel
 nestor
 octavio
 paco
+-->
+
+<div style="font-family:sans-seriff; margin: auto; max-width: 800px; display: flex; flex-direction: column; gap: 2.2em;align-items: center;">
+	<div id="configScreen" style="padding:0.5em; background: orange; display: flex; flex-direction: column; width: 100%;">
+		<p>JUGADORES</p>
+		<textarea id="inputplayers" rows=18 cols=40>
+a
+b
+c
+d
+e
+f
+g
+h
+i
+j
+k
+l
+m
+n
+o
+p
 		</textarea>
 		<p>Players: <span id="numplayers"></span></p>
 		<button id="start" style="padding:0.8em">START TOURNAMENT</button>
@@ -50,12 +68,13 @@ paco
 
 let players = [];
 let matches = [];
+let pairs = [];
 let currentMatches = [];
 
 players = inputplayers.value.split('\n').filter(row => row.trim().length > 0);
 numplayers.innerText=players.length;
 
-shuffle();
+pair();
 
 inputplayers.oninput = (e) => {
 	players = inputplayers.value.split('\n').filter(row => row.trim().length > 0);
@@ -63,6 +82,7 @@ inputplayers.oninput = (e) => {
 }
 
 start.onclick = (e) => {
+	pair();
 	shuffle();
 }
 
@@ -71,6 +91,48 @@ saveButton.onclick = (e) => {
 	show();
 	shuffle();
 }
+
+function pair() {
+	let mts = [];
+
+	for (let i=0; i<players.length; i++) {
+		for (let j=i+1; j<players.length; j++) {
+			for(let k=i+1; k<players.length; k++) {
+				if (k==j) continue;
+				for(let l=k+1; l<players.length; l++) {
+					if (l==j || l==k) continue;
+					
+					pairs.push({p1:players[i], p2:players[j], p3:players[k], p4:players[l]});
+
+					// console.log(`${players[i]} - ${players[j]}  VS ${players[k]} - ${players[l]}`);
+
+					// let parella1 = `${players[i]}${players[j]}`
+					// if(vaDavant(players[j], players[i])) {
+					// 	parella1 = `${players[j]}${players[i]}`
+					// }
+					// let parella2 = `${players[k]}${players[l]}`
+					// if(vaDavant(players[l], players[k])) {
+					// 	parella2 = `${players[l]}${players[k]}`
+					// }
+
+					// let mstr = `${parella1}${parella2}`;
+					// if(vaDavant(parella2, parella1)){
+					// 	mstr = `${parella2}${parella1}` ;
+					// }
+					// mts.push(mstr)
+				}
+			}
+		}
+	}
+
+	//mts.sort();
+	//for(let i=0; i<mts.length; i++) {
+	//	console.log(mts[i]);
+	//}
+	//console.log(mts.length);
+
+}
+
 
 function shuffle() {
 	const numMatches = Math.floor(players.length / 4);
@@ -151,6 +213,15 @@ function getRandom(array) {
 
 function compareMatches(a,b) {
 	return a.p1===b.p1 && a.p2===b.p2 && a.p3===b.p3 && a.p4===b.p4
+}
+
+function vaDavant(a,b) {
+	if (a.charAt(0) < b.charAt(0)) {
+		//console.log(`${a} vadavent de ${b}`)
+		return true;
+	}
+	// console.log(`${b} vadavent de ${a}`)
+	return false;
 }
 
 function makeid() {
