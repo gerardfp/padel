@@ -4,7 +4,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 
-<div style="margin: auto; max-width: 800px; display: flex; flex-direction: column; gap: 2.2em;align-items: center;">
+<div style="font-family:sans;margin: auto; max-width: 800px; display: flex; flex-direction: column; gap: 2.2em;align-items: center;">
 	<div id="configScreen" style="padding:0.5em; background: orange; display: flex; flex-direction: column; width: 100%;">
 		<p>JUGADORES</p>
 		<textarea id="inputplayers" rows=18 cols=40>
@@ -32,12 +32,14 @@ paco
 	<div id="tournamentScreen" style="padding:0.5em; width: 100%; background: greenyellow; display: flex; flex-direction: column;"  >
 		<p>RONDA</p>
 		<div id="showCurrentMatches"></div>
-		<button style="padding:0.8em" id="save">SAVE SCORES</button>
+		<button style="padding:0.8em" id="saveButton">SAVE SCORES</button>
 	</div>
 
 	<div id="classificacionScreen" style="padding:0.5em; width: 100%; background: violet; display: flex; flex-direction: column;"  >
 		<p>CLASIFICACION</p>
-
+		<div id="showAllMatches"> 
+			
+		</div>
 	</div>
 </div>
 
@@ -48,6 +50,7 @@ paco
 
 let players = [];
 let matches = [];
+let currentMatches = [];
 
 players = inputplayers.value.split('\n').filter(row => row.trim().length > 0);
 numplayers.innerText=players.length;
@@ -63,11 +66,16 @@ start.onclick = (e) => {
 	shuffle();
 }
 
+saveButton.onclick = (e) => {
+	save();
+	show();
+	shuffle();
+}
 
 function shuffle() {
 	const numMatches = Math.floor(players.length / 4);
 	const available = [...players];
-	const currentMatches = [];
+	currentMatches = [];
 
 	while(currentMatches.length < numMatches){
 
@@ -75,7 +83,7 @@ function shuffle() {
 
 		let i=100;
 		while(i--) {
-			
+			match.id = makeid();
 			match.p1 = getRandom(available);
 			match.p2 = getRandom(available);
 			match.p3 = getRandom(available);
@@ -101,11 +109,11 @@ function shuffle() {
 			<div>Pista ${i}</div>
 			<div style="text-align:center">
 				<div style="background:lightblue">${match.p1} - ${match.p2}</div>
-				<input style="padding:0.8em" type="number" min=0 max=100>
+				<input id="${match.id}-a" style="padding:0.8em" type="number" min=0 max=100>
 			</div>
 			<div style="background:#ff4466; text-align:center">VS</div>
 			<div style="text-align:center">
-				<input type="number" min=0 max=100 style="padding:0.8em">
+				<input id="${match.id}-b" type="number" min=0 max=100 style="padding:0.8em">
 				<div style="background:lightblue">${match.p3} - ${match.p4}</div>
 			</div>
 		</div>
@@ -115,10 +123,24 @@ function shuffle() {
 	showCurrentMatches.innerHTML = ih;
 }
 
+function save(){
+	for (const match of currentMatches) {
+		match.points12 = document.querySelector(`#${match.id}-a`).value;
+		match.points34 = document.querySelector(`#${match.id}-b`).value;	
+	}
+	
+	matches = [...matches, ...currentMatches];
+}
 
 function show(){
-
-
+	let ih = "";
+	for (const match of matches) {
+	ih += `
+		<p>${match.p1} - ${match.p2}  [${match.points12}] <span style="color:red">VS</span> [${match.points34}]  ${match.p3} - ${match.p4}</p>
+	`
+		showAllMatches.innerHTML = ih;
+	
+	}
 }
 
 
@@ -131,7 +153,18 @@ function compareMatches(a,b) {
 	return a.p1===b.p1 && a.p2===b.p2 && a.p3===b.p3 && a.p4===b.p4
 }
 
-</script>
+function makeid() {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+    const charactersLength = characters.length;
+    let counter = 0;
+    while (counter < 10) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+      counter += 1;
+    }
+    return result;
+}
 
+</script>
 
 
