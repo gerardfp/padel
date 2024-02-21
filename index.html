@@ -2,6 +2,14 @@
 <head>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<style>
+
+		summary {
+			font-weight: bold;
+			padding: 1em;
+		}
+
+	</style>
 </head>
 <!--
 alberto
@@ -21,44 +29,58 @@ nestor
 octavio
 paco
 -->
-
 <div style="font-family:sans-seriff; margin: auto; max-width: 800px; display: flex; flex-direction: column; gap: 2.2em;align-items: center;">
-	<div id="configScreen" style="padding:0.5em; background: orange; display: flex; flex-direction: column; width: 100%;">
-		<p>JUGADORES</p>
-		<textarea id="inputplayers" rows=18 cols=40>
-a
-b
-c
-d
-e
-f
-g
-h
-i
-j
-k
-l
-m
-n
-o
-p
-		</textarea>
-		<p>Players: <span id="numplayers"></span></p>
-		<button id="start" style="padding:0.8em">START TOURNAMENT</button>
-	</div>
+
+		<div id="configScreen" style="padding:0.5em; background: orange; display: flex; flex-direction: column; width: 100%;">
+			<details open>
+				<summary>JUGADORS</summary>
+			<textarea id="inputplayers" rows=18 cols=40>
+				alberto
+				blanca
+				carlos
+				david 
+				eugenio 
+				fernando 
+				gerard
+				hector
+				ismael
+				jordi
+				kevin andres miguel
+				luis miguel
+				manuel
+				nestor
+				octavio
+				paco
+			</textarea>
+			<p>Total: <span id="numPlayersSpan"></span></p>
+			<button id="startButton" style="padding:0.8em">INICIAR TORNEIG</button>
+		</details>
+		</div>
+	
 
 	<div id="tournamentScreen" style="padding:0.5em; width: 100%; background: greenyellow; display: flex; flex-direction: column;"  >
-		<p>RONDA</p>
-		<div id="showCurrentMatches"></div>
-		<button style="padding:0.8em" id="saveButton">SAVE SCORES</button>
+		<details open>
+		<summary>RONDA</summary>
+		<div id="currentMatchesDiv"></div>
+		<button style="padding:0.8em" id="saveCurrentMatchesButton">GUARDAR RESULTATS</button>
+	</details>
 	</div>
 
-	<div id="classificacionScreen" style="padding:0.5em; width: 100%; background: violet; display: flex; flex-direction: column;"  >
-		<p>CLASIFICACION</p>
-		<div id="showAllMatches"> 
-			
-		</div>
+	<div id="resultatsScreen" style="padding:0.5em; width: 100%; background: violet; display: flex; flex-direction: column;"  >
+		<details open>
+			<summary>RESULTATS</summary>
+			<div id="allMatchesDiv"></div>
+			<button style="padding:0.8em" id="updateScoresButton">ACTUALITZAR RESULTATS</button> 
+		</details>
 	</div>
+
+	<div id="clasificacioScreen" style="padding:0.5em; width: 100%; background: violet; display: flex; flex-direction: column;"  >
+		<details open>
+			<summary>CLASIFICACIO</summary>
+			<div id="clasificacioDiv"></div>
+		</details>
+	</div>
+
 </div>
 
 
@@ -67,29 +89,35 @@ p
 
 
 let players = [];
-let matches = [];
+let allMatches = {};
 let pairs = [];
 let currentMatches = [];
+let currentRound = 0;
 
-players = inputplayers.value.split('\n').filter(row => row.trim().length > 0);
-numplayers.innerText=players.length;
+players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0);
+numPlayersSpan.innerText=players.length;
 
-pair();
+//pair();
 
 inputplayers.oninput = (e) => {
-	players = inputplayers.value.split('\n').filter(row => row.trim().length > 0);
-	numplayers.innerText=players.length;
+	players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0);
+	numPlayersSpan.innerText=players.length;
 }
 
-start.onclick = (e) => {
-	pair();
-	shuffle();
+startButton.onclick = (e) => {
+	//pair();
+	newRound();
 }
 
-saveButton.onclick = (e) => {
-	save();
-	show();
-	shuffle();
+saveCurrentMatchesButton.onclick = (e) => {
+	saveCurrentMatches();
+	showAllMatches();
+	newRound();
+}
+
+updateScoresButton.onclick = () => {
+	saveAllMatches();
+	showAllMatches();
 }
 
 function pair() {
@@ -130,11 +158,12 @@ function pair() {
 	//	console.log(mts[i]);
 	//}
 	//console.log(mts.length);
-
 }
 
 
-function shuffle() {
+
+function newRound() {
+	currentRound++;
 	const numMatches = Math.floor(players.length / 4);
 	const available = [...players];
 	currentMatches = [];
@@ -143,23 +172,13 @@ function shuffle() {
 
 		const match = {};
 
-		let i=100;
-		while(i--) {
-			match.id = makeid();
-			match.p1 = getRandom(available);
-			match.p2 = getRandom(available);
-			match.p3 = getRandom(available);
-			match.p4 = getRandom(available);
-
-			if (currentMatches.find(m => compareMatches(match, m))) {
-				console.log("yeaaa");
-			} else {
-				break;
-			}
-		}
-		if (!match.p4) {
-			console.log("no se encontro jugador disponible.... :/")
-		}
+		match.id = makeid();
+		match.round = currentRound;
+		match.p1 = getRandom(available);
+		match.p2 = getRandom(available);
+		match.p3 = getRandom(available);
+		match.p4 = getRandom(available);
+			
 		currentMatches.push(match);
 	}
 	
@@ -171,40 +190,63 @@ function shuffle() {
 			<div>Pista ${i}</div>
 			<div style="text-align:center">
 				<div style="background:lightblue">${match.p1} - ${match.p2}</div>
-				<input id="${match.id}-a" style="padding:0.8em" type="number" min=0 max=100>
+				<input id="${match.id}-12" type="number" style="padding:0.8em; width:2em;text-align:center; ">
 			</div>
 			<div style="background:#ff4466; text-align:center">VS</div>
 			<div style="text-align:center">
-				<input id="${match.id}-b" type="number" min=0 max=100 style="padding:0.8em">
+				<input id="${match.id}-34" type="number" style="padding:0.8em; width:2em;text-align:center;">
 				<div style="background:lightblue">${match.p3} - ${match.p4}</div>
 			</div>
 		</div>
 		`
 		i++;
 	}
-	showCurrentMatches.innerHTML = ih;
+	currentMatchesDiv.innerHTML = ih;
 }
 
-function save(){
+
+
+function saveCurrentMatches(){
 	for (const match of currentMatches) {
-		match.points12 = document.querySelector(`#${match.id}-a`).value;
-		match.points34 = document.querySelector(`#${match.id}-b`).value;	
+		match.points12 = document.querySelector(`#${match.id}-12`).value;
+		match.points34 = document.querySelector(`#${match.id}-34`).value;	
 	}
 	
-	matches = [...matches, ...currentMatches];
+	allMatches[currentRound] = [...currentMatches];
 }
 
-function show(){
+function saveAllMatches(){
+	for (const round in allMatches) {
+		for (const match of allMatches[round]) {
+			match.points12 = document.querySelector(`#${match.id}-a`).value;
+			match.points34 = document.querySelector(`#${match.id}-b`).value;	
+		}
+	}
+} 
+
+function showAllMatches(){
 	let ih = "";
-	for (const match of matches) {
-	ih += `
-		<p>${match.p1} - ${match.p2}  [${match.points12}] <span style="color:red">VS</span> [${match.points34}]  ${match.p3} - ${match.p4}</p>
-	`
-		showAllMatches.innerHTML = ih;
-	
+	ih += `<table>`;
+	for (const round in allMatches) {
+		ih += `<tr><td colspan=5 style="text-align:center; background:gray;color:white ">Ronda ${round}</td></tr>`;
+		
+		for(const match of allMatches[round]){
+			ih += `
+				<tr><td style="width:40%; ">${match.p1} - ${match.p2}</td><td><input style="width:2em;" id="${match.id}-a" value="${match.points12}" /></td><td><span style="color:red">VS</span></td><td><input style="width:2em;" id="${match.id}-b" value="${match.points34}" /></td><td style="text-align:right; width:40%">${match.p3} - ${match.p4}</td></tr>
+			`
+		}
 	}
+	ih += `</table>`;
+	allMatchesDiv.innerHTML = ih;
 }
 
+function showClasificacio(){
+	for (const round in allMatches) {
+		for (const match of allMatches[round]) {
+		
+		}
+	}	
+}
 
 function getRandom(array) {
 	//return array[(Math.random() * array.length) | 0]
@@ -217,10 +259,8 @@ function compareMatches(a,b) {
 
 function vaDavant(a,b) {
 	if (a.charAt(0) < b.charAt(0)) {
-		//console.log(`${a} vadavent de ${b}`)
 		return true;
 	}
-	// console.log(`${b} vadavent de ${a}`)
 	return false;
 }
 
