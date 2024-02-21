@@ -31,7 +31,7 @@ paco
 -->
 <div style="font-family:sans-seriff; margin: auto; max-width: 800px; display: flex; flex-direction: column; gap: 2.2em;align-items: center;">
 
-		<div id="configScreen" style="padding:0.5em; background: orange; display: flex; flex-direction: column; width: 100%;">
+		<div id="configScreen" style="padding:0.5em; background: rgb(249, 198, 103); display: flex; flex-direction: column; width: 100%;">
 			<details open>
 				<summary>JUGADORS</summary>
 			<textarea id="inputplayers" rows=18 cols=40>
@@ -58,15 +58,15 @@ paco
 		</div>
 	
 
-	<div id="tournamentScreen" style="padding:0.5em; width: 100%; background: greenyellow; display: flex; flex-direction: column;"  >
+	<div id="tournamentScreen" style="padding:0.5em; width: 100%; background: rgb(192, 247, 108); display: flex; flex-direction: column;"  >
 		<details open>
-		<summary>RONDA</summary>
+		<summary>RONDA <span id="roundNumSpan"></span></summary>
 		<div id="currentMatchesDiv"></div>
-		<button style="padding:0.8em" id="saveCurrentMatchesButton">GUARDAR RESULTATS</button>
+		<button style="padding:0.8em" id="newRoundButton">NOVA RONDA</button>
 	</details>
 	</div>
 
-	<div id="resultatsScreen" style="padding:0.5em; width: 100%; background: violet; display: flex; flex-direction: column;"  >
+	<div id="resultatsScreen" style="padding:0.5em; width: 100%; background: rgb(241, 169, 241); display: flex; flex-direction: column;"  >
 		<details open>
 			<summary>RESULTATS</summary>
 			<div id="allMatchesDiv"></div>
@@ -74,7 +74,7 @@ paco
 		</details>
 	</div>
 
-	<div id="clasificacioScreen" style="padding:0.5em; width: 100%; background: violet; display: flex; flex-direction: column;"  >
+	<div id="clasificacioScreen" style="padding:0.5em; width: 100%; background: rgb(238, 130, 130); display: flex; flex-direction: column;"  >
 		<details open>
 			<summary>CLASIFICACIO</summary>
 			<div id="clasificacioDiv"></div>
@@ -95,6 +95,7 @@ let currentRound = 0;
 
 actualitzaPlayers();
 newRound();
+showAllMatches();
 showClasificacio();
 
 inputplayers.oninput = (e) => {
@@ -108,11 +109,9 @@ startButton.onclick = (e) => {
 	newRound();
 }
 
-saveCurrentMatchesButton.onclick = (e) => {
-	saveCurrentMatches();
-	showAllMatches();
-	showClasificacio();
+newRoundButton.onclick = (e) => {
 	newRound();
+	showAllMatches();
 }
 
 updateScoresButton.onclick = () => {
@@ -130,6 +129,9 @@ function actualitzaPlayers(){
 
 function newRound() {
 	currentRound++;
+
+	roundNumSpan.innerText = currentRound;
+
 	const numMatches = Math.floor(players.length / 4);
 	const available = [...players];
 	currentMatches = [];
@@ -144,6 +146,8 @@ function newRound() {
 		match.p2 = getRandom(available);
 		match.p3 = getRandom(available);
 		match.p4 = getRandom(available);
+		match.points12 = 0;
+		match.points34 = 0;
 			
 		currentMatches.push(match);
 	}
@@ -156,11 +160,11 @@ function newRound() {
 			<div>Pista ${i}</div>
 			<div style="text-align:center">
 				<div style="background:lightblue">${match.p1} - ${match.p2}</div>
-				<input id="${match.id}-12" type="number" style="padding:0.8em; width:3em;text-align:center; ">
+				<input id="${match.id}-12" oninput="saveAllMatches()" type="number" style="padding:0.8em; width:3em;text-align:center; ">
 			</div>
 			<div style="background:#ff4466; text-align:center">VS</div>
 			<div style="text-align:center">
-				<input id="${match.id}-34" type="number" style="padding:0.8em; width:3em;text-align:center;">
+				<input id="${match.id}-34" oninput="saveAllMatches()" type="number" style="padding:0.8em; width:3em;text-align:center;">
 				<div style="background:lightblue">${match.p3} - ${match.p4}</div>
 			</div>
 		</div>
@@ -168,6 +172,8 @@ function newRound() {
 		i++;
 	}
 	currentMatchesDiv.innerHTML = ih;
+
+	allMatches[currentRound] = [...currentMatches];
 }
 
 
@@ -178,16 +184,20 @@ function saveCurrentMatches(){
 		match.points34 = document.querySelector(`#${match.id}-34`).value;	
 	}
 	
-	allMatches[currentRound] = [...currentMatches];
+	//allMatches[currentRound] = [...currentMatches];
 }
 
-function saveAllMatches(){
+function saveAllMatches(e){
+	console.log(document.querySelector(`#${e.target.id}`));
 	for (const round in allMatches) {
 		for (const match of allMatches[round]) {
-			match.points12 = document.querySelector(`#${match.id}-a`).value;
-			match.points34 = document.querySelector(`#${match.id}-b`).value;	
+			match.points12 = document.querySelector(`#${match.id}-12`)?.value | 0;
+			match.points34 = document.querySelector(`#${match.id}-34`)?.value | 0;	
 		}
 	}
+
+	// showAllMatches();
+	// showClasificacio();
 } 
 
 function showAllMatches(){
@@ -198,7 +208,7 @@ function showAllMatches(){
 		
 		for(const match of allMatches[round]){
 			ih += `
-				<tr><td style="width:40%; ">${match.p1} - ${match.p2}</td><td><input style="width:2em;" id="${match.id}-a" value="${match.points12}" /></td><td><span style="color:red">VS</span></td><td><input style="width:2em;" id="${match.id}-b" value="${match.points34}" /></td><td style="text-align:right; width:40%">${match.p3} - ${match.p4}</td></tr>
+				<tr><td style="width:40%; ">${match.p1} - ${match.p2}</td><td><input  oninput="saveAllMatches(event)" style="width:2em;" id="${match.id}-a" value="${match.points12}" /></td><td><span style="color:red">VS</span></td><td><input  oninput="saveAllMatches()" style="width:2em;" id="${match.id}-b" value="${match.points34}" /></td><td style="text-align:right; width:40%">${match.p3} - ${match.p4}</td></tr>
 			`
 		}
 	}
@@ -219,7 +229,9 @@ function showClasificacio(){
 	}	
 
 	let ih = "";
-	for (const player in points) {
+	for (const player of Object.keys(points).sort((a, b) => {
+  		return points[b] - points[a]
+	})) {
 		ih += `<p>${player}: ${points[player]}</p>`;
 	}
 	clasificacioDiv.innerHTML = ih;
