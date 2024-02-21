@@ -191,9 +191,9 @@ function showAllMatches(){
 			ih += `
 				<tr style="padding:2em">
 					<td style="width:40%; text-align:left; ">${match.p1} - ${match.p2}</td>
-					<td><input onFocus="guay(this)" onFocusOut="kaka(this)" onInput="saveScore(event)" style="width:2em; padding:0.8em; text-align:center" id="${match.id}-points12" value="${match.points12}" /></td>
+					<td><input type="number" onFocus="guay(this)" onFocusOut="kaka(this)" onInput="saveScore(event)" style="width:2em; padding:0.8em; text-align:center" id="${match.id}-points12" value="${match.points12}" /></td>
 					<td><span style="color:red">VS</span></td>
-					<td><input onFocus="guay(this)" onFocusOut="kaka(this)" onInput="saveScore(event)" style="width:2em; padding:0.8em; text-align:center" id="${match.id}-points34" value="${match.points34}" /></td>
+					<td><input type="number" onFocus="guay(this)" onFocusOut="kaka(this)" onInput="saveScore(event)" style="width:2em; padding:0.8em; text-align:center" id="${match.id}-points34" value="${match.points34}" /></td>
 					<td style="text-align:right; width:40%">${match.p3} - ${match.p4}</td>
 				</tr>
 			`;
