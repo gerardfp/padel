@@ -35,22 +35,22 @@ paco
 			<details open>
 				<summary>JUGADORS</summary>
 			<textarea id="inputplayers" rows=18 cols=40>
-				alberto
-				blanca
-				carlos
-				david 
-				eugenio 
-				fernando 
-				gerard
-				hector
-				ismael
-				jordi
-				kevin andres miguel
-				luis miguel
-				manuel
-				nestor
-				octavio
-				paco
+alberto
+blanca
+carlos
+david 
+eugenio 
+fernando 
+gerard
+hector
+ismael
+jordi
+kevin andres miguel
+luis miguel
+manuel
+nestor
+octavio
+paco
 			</textarea>
 			<p>Total: <span id="numPlayersSpan"></span></p>
 			<button id="startButton" style="padding:0.8em">INICIAR TORNEIG</button>
@@ -90,76 +90,42 @@ paco
 
 let players = [];
 let allMatches = {};
-let pairs = [];
 let currentMatches = [];
 let currentRound = 0;
 
-players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0);
-numPlayersSpan.innerText=players.length;
-
-//pair();
+actualitzaPlayers();
+newRound();
+showClasificacio();
 
 inputplayers.oninput = (e) => {
-	players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0);
-	numPlayersSpan.innerText=players.length;
+	actualitzaPlayers();
 }
 
 startButton.onclick = (e) => {
-	//pair();
+	allMatches = {};
+	currentMatches = [];
+	currentRound = 0;
 	newRound();
 }
 
 saveCurrentMatchesButton.onclick = (e) => {
 	saveCurrentMatches();
 	showAllMatches();
+	showClasificacio();
 	newRound();
 }
 
 updateScoresButton.onclick = () => {
 	saveAllMatches();
 	showAllMatches();
+	showClasificacio();
 }
 
-function pair() {
-	let mts = [];
 
-	for (let i=0; i<players.length; i++) {
-		for (let j=i+1; j<players.length; j++) {
-			for(let k=i+1; k<players.length; k++) {
-				if (k==j) continue;
-				for(let l=k+1; l<players.length; l++) {
-					if (l==j || l==k) continue;
-					
-					pairs.push({p1:players[i], p2:players[j], p3:players[k], p4:players[l]});
-
-					// console.log(`${players[i]} - ${players[j]}  VS ${players[k]} - ${players[l]}`);
-
-					// let parella1 = `${players[i]}${players[j]}`
-					// if(vaDavant(players[j], players[i])) {
-					// 	parella1 = `${players[j]}${players[i]}`
-					// }
-					// let parella2 = `${players[k]}${players[l]}`
-					// if(vaDavant(players[l], players[k])) {
-					// 	parella2 = `${players[l]}${players[k]}`
-					// }
-
-					// let mstr = `${parella1}${parella2}`;
-					// if(vaDavant(parella2, parella1)){
-					// 	mstr = `${parella2}${parella1}` ;
-					// }
-					// mts.push(mstr)
-				}
-			}
-		}
-	}
-
-	//mts.sort();
-	//for(let i=0; i<mts.length; i++) {
-	//	console.log(mts[i]);
-	//}
-	//console.log(mts.length);
+function actualitzaPlayers(){
+	players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0);
+	numPlayersSpan.innerText=players.length;	
 }
-
 
 
 function newRound() {
@@ -190,11 +156,11 @@ function newRound() {
 			<div>Pista ${i}</div>
 			<div style="text-align:center">
 				<div style="background:lightblue">${match.p1} - ${match.p2}</div>
-				<input id="${match.id}-12" type="number" style="padding:0.8em; width:2em;text-align:center; ">
+				<input id="${match.id}-12" type="number" style="padding:0.8em; width:3em;text-align:center; ">
 			</div>
 			<div style="background:#ff4466; text-align:center">VS</div>
 			<div style="text-align:center">
-				<input id="${match.id}-34" type="number" style="padding:0.8em; width:2em;text-align:center;">
+				<input id="${match.id}-34" type="number" style="padding:0.8em; width:3em;text-align:center;">
 				<div style="background:lightblue">${match.p3} - ${match.p4}</div>
 			</div>
 		</div>
@@ -241,28 +207,33 @@ function showAllMatches(){
 }
 
 function showClasificacio(){
+	const points = {};
+
 	for (const round in allMatches) {
 		for (const match of allMatches[round]) {
-		
+			points[match.p1] = (Number(points[match.p1]) | 0) + Number(match.points12);
+			points[match.p2] = (Number(points[match.p2]) | 0) + Number(match.points12);
+			points[match.p3] = (Number(points[match.p3]) | 0) + Number(match.points34);
+			points[match.p4] = (Number(points[match.p4]) | 0) + Number(match.points34);
 		}
 	}	
+
+	let ih = "";
+	for (const player in points) {
+		ih += `<p>${player}: ${points[player]}</p>`;
+	}
+	clasificacioDiv.innerHTML = ih;
 }
+
+
+
 
 function getRandom(array) {
 	//return array[(Math.random() * array.length) | 0]
 	return array.splice((Math.random() * array.length) | 0, 1)[0]
 }
 
-function compareMatches(a,b) {
-	return a.p1===b.p1 && a.p2===b.p2 && a.p3===b.p3 && a.p4===b.p4
-}
 
-function vaDavant(a,b) {
-	if (a.charAt(0) < b.charAt(0)) {
-		return true;
-	}
-	return false;
-}
 
 function makeid() {
     let result = '';
@@ -275,6 +246,60 @@ function makeid() {
     }
     return result;
 }
+
+// let pairs = [];
+
+// function compareMatches(a,b) {
+// 	return a.p1===b.p1 && a.p2===b.p2 && a.p3===b.p3 && a.p4===b.p4
+// }
+
+// function vaDavant(a,b) {
+// 	if (a.charAt(0) < b.charAt(0)) {
+// 		return true;
+// 	}
+// 	return false;
+// }
+
+
+// function pair() {
+// 	let mts = [];
+
+// 	for (let i=0; i<players.length; i++) {
+// 		for (let j=i+1; j<players.length; j++) {
+// 			for(let k=i+1; k<players.length; k++) {
+// 				if (k==j) continue;
+// 				for(let l=k+1; l<players.length; l++) {
+// 					if (l==j || l==k) continue;
+					
+// 					pairs.push({p1:players[i], p2:players[j], p3:players[k], p4:players[l]});
+
+// 					// console.log(`${players[i]} - ${players[j]}  VS ${players[k]} - ${players[l]}`);
+
+// 					// let parella1 = `${players[i]}${players[j]}`
+// 					// if(vaDavant(players[j], players[i])) {
+// 					// 	parella1 = `${players[j]}${players[i]}`
+// 					// }
+// 					// let parella2 = `${players[k]}${players[l]}`
+// 					// if(vaDavant(players[l], players[k])) {
+// 					// 	parella2 = `${players[l]}${players[k]}`
+// 					// }
+
+// 					// let mstr = `${parella1}${parella2}`;
+// 					// if(vaDavant(parella2, parella1)){
+// 					// 	mstr = `${parella2}${parella1}` ;
+// 					// }
+// 					// mts.push(mstr)
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	//mts.sort();
+// 	//for(let i=0; i<mts.length; i++) {
+// 	//	console.log(mts[i]);
+// 	//}
+// 	//console.log(mts.length);
+// }
 
 </script>
 
