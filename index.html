@@ -37,13 +37,13 @@
 		    -moz-appearance:textfield;
 		}
 
-		#clasificacioDiv table tr:first-child {
+		#clasificacioDiv table tr:nth-child(2) {
 			background-color: gold;
 		}
-		#clasificacioDiv table tr:nth-child(2) {
+		#clasificacioDiv table tr:nth-child(3) {
 			background-color: silver;
 		}
-		#clasificacioDiv table tr:nth-child(3) {
+		#clasificacioDiv table tr:nth-child(4) {
 			background-color: #e79f57;
 		}
 		div.player {
@@ -334,31 +334,68 @@ function showClasificacio(){
 
 	for (const matchid in allMatches) {
 		const match = allMatches[matchid];
-		points[match.p1] = (Number(points[match.p1]) | 0) + Number(match.points12);
-		points[match.p2] = (Number(points[match.p2]) | 0) + Number(match.points12);
-		points[match.p3] = (Number(points[match.p3]) | 0) + Number(match.points34);
-		points[match.p4] = (Number(points[match.p4]) | 0) + Number(match.points34);
+		points[match.p1] = points[match.p1] || { points: 0, pg:0, pp: 0, pe: 0, pf: 0, pc: 0};
+		points[match.p2] = points[match.p2] || { points: 0, pg:0, pp: 0, pe: 0, pf: 0, pc: 0};
+		points[match.p3] = points[match.p3] || { points: 0, pg:0, pp: 0, pe: 0, pf: 0, pc: 0};
+		points[match.p4] = points[match.p4] || { points: 0, pg:0, pp: 0, pe: 0, pf: 0, pc: 0};
+
+		points[match.p1].points += Number(match.points12);
+		points[match.p2].points += Number(match.points12);
+		points[match.p3].points +=  Number(match.points34);
+		points[match.p4].points +=  Number(match.points34);
+
+		points[match.p1].pf += Number(match.points12);
+		points[match.p2].pf += Number(match.points12);
+		points[match.p3].pf += Number(match.points34);
+		points[match.p4].pf += Number(match.points34);
+
+		points[match.p1].pc += Number(match.points34);
+		points[match.p2].pc += Number(match.points34);
+		points[match.p3].pc += Number(match.points12);
+		points[match.p4].pc += Number(match.points12);
+
 
 		if (match.points12 > match.points34) {
-			points[match.p1] += 5;
-			points[match.p2] += 5;
+			points[match.p1].points += 5;
+			points[match.p2].points += 5;
+			points[match.p1].pg += 1;
+			points[match.p2].pg += 1;
+			points[match.p3].pp += 1;
+			points[match.p4].pp += 1;
+
 		}
 		else if (match.points34 > match.points12) {
-			points[match.p3] += 5;
-			points[match.p4] += 5;
+			points[match.p3].points += 5;
+			points[match.p4].points += 5;
+			points[match.p1].pp += 1;
+			points[match.p2].pp += 1;
+			points[match.p3].pg += 1;
+			points[match.p4].pg += 1;
 		} else {
-			points[match.p1] += 1;
-			points[match.p2] += 1;
-			points[match.p3] += 1;
-			points[match.p4] += 1;
+			points[match.p1].points += 1;
+			points[match.p2].points += 1;
+			points[match.p3].points += 1;
+			points[match.p4].points += 1;
+			points[match.p1].pe += 1;
+			points[match.p2].pe += 1;
+			points[match.p3].pe += 1;
+			points[match.p4].pe += 1;
 		}
 
 	}	
 
 	let c=1;
-	let ih = "<table>";
-	for (const player of Object.keys(points).sort((a, b) => points[b] - points[a])) {
-		ih += `<tr><td>#${c}</td><td style="text-align:left">${player}</td><td>${points[player]}</td></tr>`;
+	let ih = "<table><tr><th></th><th></th><th>pts</th><th>pg</th><th>pp</th><th>pe</th><th>pf</th><th>pc</th></tr>";
+	for (const player of Object.keys(points).sort((a, b) => points[b].points - points[a].points)) {
+		ih += `<tr>
+			<td>#${c}</td><td style="text-align:left">${player}</td>
+			<td>${points[player].points}</td>
+			<td>${points[player].pg}</td>
+			<td>${points[player].pp}</td>
+			<td>${points[player].pe}</td>
+			<td>${points[player].pf}</td>
+			<td>${points[player].pc}</td>
+			</tr>`;
 		c++; 
 	}
 	ih += "</table>";
