@@ -96,7 +96,7 @@
 <script>
 
 let players = [];
-let allMatches = {};
+let matches = {};
 let currentRound = 0;
 
 const s = window.localStorage;
@@ -115,25 +115,25 @@ try {
 }
 
 try {
-	allMatches = JSON.parse(s.getItem("allMatches"));
-	if (allMatches === null) {
-		allMatches = {};
+	matches = JSON.parse(s.getItem("matches"));
+	if (matches === null) {
+		matches = {};
 		newRound();
 	} else {
-		for (const matchid in allMatches) {
-			if (allMatches[matchid].round > currentRound) {
-				currentRound = allMatches[matchid].round
+		for (const matchid in matches) {
+			if (matches[matchid].round > currentRound) {
+				currentRound = matches[matchid].round;
 			}
 		}
 	}
 } catch (error) {
 	players = [];
-	allMatches = {};
+	matches = {};
 	actualitzaPlayers();
 	newRound();
 }
 
-showAllMatches();
+showMatches();
 showClasificacio();
 
 inputplayers.onfocus = (e) => {
@@ -143,25 +143,22 @@ inputplayers.onfocus = (e) => {
 inputplayers.oninput = (e) => {
 	actualitzaPlayers();
 	s.setItem("players", inputplayers.value);
-	e.target.style.height = "5px";
 	e.target.style.height = (e.target.scrollHeight) + "px";
 }
 
 startButton.onclick = (e) => {
-	s.removeItem("allMatches");
-	allMatches = {};
-	allMatchesByRound = {};
-	currentMatches = [];
+	s.removeItem("matches");
+	matches = {};
 	currentRound = 0;
 	actualitzaPlayers();
 	newRound();
-	showAllMatches();
+	showMatches();
 	showClasificacio();
 }
 
 newRoundButton.onclick = (e) => {
 	newRound();
-	showAllMatches();
+	showMatches();
 }
 
 function actualitzaPlayers(){
@@ -187,40 +184,39 @@ function newRound() {
 		match.points12 = 0;
 		match.points34 = 0;
 
-		allMatches[match.id] = match;
+		matches[match.id] = match;
 	}
 }
 
 function saveScore(event) {
 	const [matchid,pointsTo] = event.target.id.split('-');
-	allMatches[matchid][pointsTo] = event.target.value;
-	s.setItem('allMatches', JSON.stringify(allMatches));
+	matches[matchid][pointsTo] = event.target.value;
+	s.setItem('matches', JSON.stringify(matches));
 	showClasificacio(); 
 }
 
-function showAllMatches(){
-	const allMatchesByRound = {}
+function showMatches(){
+	const matchesByRound = {}
 
-	for (const matchid in allMatches) {
-		const match = allMatches[matchid];
-		allMatchesByRound[match.round] = allMatchesByRound[match.round] || {};
-		allMatchesByRound[match.round][match.id] = match;
+	for (const matchid in matches) {
+		const match = matches[matchid];
+		matchesByRound[match.round] = matchesByRound[match.round] || {};
+		matchesByRound[match.round][match.id] = match;
 	}
 
-	let ih = "";
-	ih += `<table style="width:100%">`;
-	ih += `<tr>
-		<th style="width: 40%"></th>
-		<th style="width: 14%"></th>
-		<th style="width: 6%"></th>
-		<th style="width: 14%"></th>
-		<th style="width: 40%"></th>
-		</tr>`
-	for (const round in allMatchesByRound) {
+	let ih = `<table style="width:100%">
+		<tr>
+			<th style="width: 40%"></th>
+			<th style="width: 14%"></th>
+			<th style="width: 6%"></th>
+			<th style="width: 14%"></th>
+			<th style="width: 40%"></th>
+		</tr>`;
+	for (const round in matchesByRound) {
 		ih += `<tr><td colspan=5 style="text-align:center; background:black; color:white ">Ronda ${round}</td></tr>`;
 		
-		for(const matchid in allMatchesByRound[round]){
-			const match = allMatchesByRound[round][matchid]; 
+		for(const matchid in matchesByRound[round]){
+			const match = matchesByRound[round][matchid]; 
 			ih += ` 
 				<tr>
 					<td >
@@ -266,8 +262,8 @@ function guay(t) {
 function showClasificacio(){
 	const points = {};
 
-	for (const matchid in allMatches) {
-		const match = allMatches[matchid];
+	for (const matchid in matches) {
+		const match = matches[matchid];
 		points[match.p1] = points[match.p1] || { points: 0, pg:0, pp: 0, pe: 0, pf: 0, pc: 0};
 		points[match.p2] = points[match.p2] || { points: 0, pg:0, pp: 0, pe: 0, pf: 0, pc: 0};
 		points[match.p3] = points[match.p3] || { points: 0, pg:0, pp: 0, pe: 0, pf: 0, pc: 0};
