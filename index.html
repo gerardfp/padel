@@ -67,8 +67,15 @@
 		<details open style="text-align: center;">
 			<summary style="background: rgb(42, 85, 196); color:white">JUGADORS</summary>
 			<p></p>
-			<textarea id="inputplayers" rows=4 cols=40></textarea>
+			<textarea id="inputplayers" rows=4 cols=40>a-b
+c
+d
+e-f
+
+			</textarea>
 			<p>Total: <span id="numPlayersSpan"></span></p>
+			<input type="text" id="inputNumPistes" placeholder="Numero de pistes" style="padding:0.8em" type="number">
+			<p></p>
 			<button id="startButton" style="padding:0.8em">INICIAR TORNEIG</button>
 		</details>
 	</div>
@@ -99,23 +106,20 @@ let players = [];
 let matches = {};
 let currentRound = 0;
 
-const s = window.localStorage;
-
 try {
-	players = s.getItem("players");
+	players = window.localStorage.getItem("players");
 	if (players === null) {
 		players = [];
 	} else {
 		inputplayers.value = players;		
 	}
-	actualitzaPlayers();
+	updatePlayersArrayFromTextarea();
 } catch(error){
-	actualitzaPlayers();
-	players = [];
+	updatePlayersArrayFromTextarea();
 }
 
 try {
-	matches = JSON.parse(s.getItem("matches"));
+	matches = JSON.parse(window.localStorage.getItem("matches"));
 	if (matches === null) {
 		matches = {};
 		newRound();
@@ -127,9 +131,8 @@ try {
 		}
 	}
 } catch (error) {
-	players = [];
 	matches = {};
-	actualitzaPlayers();
+	updatePlayersArrayFromTextarea();
 	newRound();
 }
 
@@ -141,16 +144,16 @@ inputplayers.onfocus = (e) => {
 }
 
 inputplayers.oninput = (e) => {
-	actualitzaPlayers();
-	s.setItem("players", inputplayers.value);
+	updatePlayersArrayFromTextarea();
+	window.localStorage.setItem("players", inputplayers.value);
 	e.target.style.height = (e.target.scrollHeight) + "px";
 }
 
 startButton.onclick = (e) => {
-	s.removeItem("matches");
+	window.localStorage.removeItem("matches");
 	matches = {};
 	currentRound = 0;
-	actualitzaPlayers();
+	updatePlayersArrayFromTextarea();
 	newRound();
 	showMatches();
 	showClasificacio();
@@ -161,7 +164,7 @@ newRoundButton.onclick = (e) => {
 	showMatches();
 }
 
-function actualitzaPlayers(){
+function updatePlayersArrayFromTextarea(){
 	players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0);
 	numPlayersSpan.innerText = players.length;	
 }
@@ -177,10 +180,24 @@ function newRound() {
 
 		match.id = makeid();
 		match.round = currentRound;
-		match.p1 = getRandom(available);
-		match.p2 = getRandom(available);
-		match.p3 = getRandom(available);
-		match.p4 = getRandom(available);
+		const p1 = getRandom(available);
+		if (p1.includes('-')) {
+			const [pp1, pp2] = p1.split('-').map(p => p.trim());
+			match.p1 = pp1;
+			match.p2 = pp2;
+		} else {
+			match.p1 = p1;
+			match.p2 = getRandomSingle(available);
+		}
+		const p3 = getRandom(available);
+		if (p3.includes('-')) {
+			const [pp3,pp4] = p3.split('-').map(p => p.trim());
+			match.p3 = pp3;
+			match.p4 = pp4;
+		} else {
+			match.p3 = p3;
+			match.p4 = getRandomSingle(available);
+		}
 		match.points12 = 0;
 		match.points34 = 0;
 
@@ -191,7 +208,7 @@ function newRound() {
 function saveScore(event) {
 	const [matchid,pointsTo] = event.target.id.split('-');
 	matches[matchid][pointsTo] = event.target.value;
-	s.setItem('matches', JSON.stringify(matches));
+	window.localStorage.setItem('matches', JSON.stringify(matches));
 	showClasificacio(); 
 }
 
@@ -330,12 +347,52 @@ function showClasificacio(){
 	clasificacioDiv.innerHTML = ih;
 }
 
+// te que agarrar primer els jugadors en menor numero de partides jugades
+// en una parella conta el jugador en menor numero de partides
+// pero s'ha de prioritzar el completar les pistes, per exemple:
+// Si queda una parella per completar i n'hi ha un jugador amb 6 partides, 
+// i una parella amb 7 partides, s'ha d'agafar la parella
 
 
-//utils
+getMatchesCountPerPlayer();
+
+function getMatchesCountPerPlayer(){
+	const playerCount = {};
+	for (const matchid in matches) {
+		const match = matches[matchid];
+		playerCount[match.p1] = playerCount[match.p1] || {played: 0};
+		playerCount[match.p1].played++; 
+		playerCount[match.p2] = playerCount[match.p2] || {played: 0};
+		playerCount[match.p2].played++; 
+		playerCount[match.p3] = playerCount[match.p3] || {played: 0};
+		playerCount[match.p3].played++; 
+		playerCount[match.p4] = playerCount[match.p4] || {played: 0};
+		playerCount[match.p4].played++; 
+	}
+
+	console.log(playerCount);
+	const matchCount = {};
+	for (const player in playerCount) {
+		matchCount[playerCount[player].played] = matchCount[playerCount[player].played] || [];
+		matchCount[playerCount[player].played].push(player)
+	}
+
+	console.log(matchCount);
+}
+
+// utils
 
 function getRandom(array) {
 	return array.splice((Math.random() * array.length) | 0, 1)[0]
+}
+
+function getRandomSingle(array) {
+	let random = Math.random()*array.length | 0; 
+	for (let i=random; i < (random+array.length); i++){
+		if (array[i%array.length].includes('-')) continue;
+
+		return array.splice((i%array.length) | 0, 1)[0]
+	}
 }
 
 function makeid() {
