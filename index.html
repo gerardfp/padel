@@ -74,7 +74,7 @@ e-f
 
 			</textarea>
 			<p>Total: <span id="numPlayersSpan"></span></p>
-			<input type="text" id="inputNumPistes" placeholder="Numero de pistes" style="padding:0.8em" type="number">
+			<input id="inputNumPistes" placeholder="Numero de pistes" style="padding:0.8em" type="number">
 			<p></p>
 			<button id="startButton" style="padding:0.8em">INICIAR TORNEIG</button>
 		</details>
@@ -105,6 +105,8 @@ e-f
 let players = [];
 let matches = {};
 let currentRound = 0;
+let numPistes = 1;
+
 
 try {
 	players = window.localStorage.getItem("players");
@@ -136,6 +138,17 @@ try {
 	newRound();
 }
 
+try {
+	numPistes = window.localStorage.getItem("numPistes");
+	if (numPistes === null) {
+		numPistes = 1;
+	} else {
+		inputNumPistes.value = numPistes;
+	}
+} catch(error) {
+	numPistes = 1;
+}
+
 showMatches();
 showClasificacio();
 
@@ -147,6 +160,11 @@ inputplayers.oninput = (e) => {
 	updatePlayersArrayFromTextarea();
 	window.localStorage.setItem("players", inputplayers.value);
 	e.target.style.height = (e.target.scrollHeight) + "px";
+}
+
+inputNumPistes.oninput = (e) => {
+	window.localStorage.setItem("numPistes", inputNumPistes.value);
+	numPistes = inputNumPistes.value;
 }
 
 startButton.onclick = (e) => {
@@ -165,45 +183,12 @@ newRoundButton.onclick = (e) => {
 }
 
 function updatePlayersArrayFromTextarea(){
-	players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0);
+	players = inputplayers.value.split('\n').map(row => row.trim()).filter(row => row.trim().length > 0).map(row => row.split('-'));
+	console.log(players);
 	numPlayersSpan.innerText = players.length;	
 }
 
-function newRound() {
-	currentRound++;
 
-	let numMatches = Math.floor(players.length / 4);
-	const available = [...players];
-
-	while(numMatches--){
-		const match = {};
-
-		match.id = makeid();
-		match.round = currentRound;
-		const p1 = getRandom(available);
-		if (p1.includes('-')) {
-			const [pp1, pp2] = p1.split('-').map(p => p.trim());
-			match.p1 = pp1;
-			match.p2 = pp2;
-		} else {
-			match.p1 = p1;
-			match.p2 = getRandomSingle(available);
-		}
-		const p3 = getRandom(available);
-		if (p3.includes('-')) {
-			const [pp3,pp4] = p3.split('-').map(p => p.trim());
-			match.p3 = pp3;
-			match.p4 = pp4;
-		} else {
-			match.p3 = p3;
-			match.p4 = getRandomSingle(available);
-		}
-		match.points12 = 0;
-		match.points34 = 0;
-
-		matches[match.id] = match;
-	}
-}
 
 function saveScore(event) {
 	const [matchid,pointsTo] = event.target.id.split('-');
@@ -353,9 +338,60 @@ function showClasificacio(){
 // Si queda una parella per completar i n'hi ha un jugador amb 6 partides, 
 // i una parella amb 7 partides, s'ha d'agafar la parella
 
+function newRound() {
+	currentRound++;
 
-getMatchesCountPerPlayer();
+	let numMatches = numPistes; // Math.floor(players.length / 4);
+	const available = [...players];
 
+	console.log(available);
+
+	while(numMatches--){
+		const match = {};
+
+		match.id = makeid();
+		match.round = currentRound;
+		const p1 = getRandom(available);
+		if (p1.includes('-')) {
+			const [pp1, pp2] = p1.split('-').map(p => p.trim());
+			match.p1 = pp1;
+			match.p2 = pp2;
+		} else {
+			match.p1 = p1;
+			match.p2 = getRandomSingle(available);
+		}
+		const p3 = getRandom(available);
+		if (p3.includes('-')) {
+			const [pp3,pp4] = p3.split('-').map(p => p.trim());
+			match.p3 = pp3;
+			match.p4 = pp4;
+		} else {
+			match.p3 = p3;
+			match.p4 = getRandomSingle(available);
+		}
+		match.points12 = 0;
+		match.points34 = 0;
+
+		matches[match.id] = match;
+	}
+}
+
+newnewRound();
+
+function newnewRound(){
+	let numMatches = numPistes+1;
+
+	let matchCount = getMatchesCountPerPlayer();
+
+	while(numMatches--) {
+		console.log("yeaaaa");
+		const e1 = getMenosPartides(matchCount);
+		console.log(e1);
+	}
+}
+
+// esta funcion lo que te que fer es actualitzar el array players i posar
+// el numero de partides de cada element (single o parella)
 function getMatchesCountPerPlayer(){
 	const playerCount = {};
 	for (const matchid in matches) {
@@ -371,16 +407,35 @@ function getMatchesCountPerPlayer(){
 	}
 
 	console.log(playerCount);
+
 	const matchCount = {};
 	for (const player in playerCount) {
+		console.log(`playercount ${player}`)
+		console.log(`${matchCount[playerCount[player].played]}`)
 		matchCount[playerCount[player].played] = matchCount[playerCount[player].played] || [];
 		matchCount[playerCount[player].played].push(player)
 	}
 
 	console.log(matchCount);
+	return matchCount;
 }
 
 // utils
+
+function getMenosPartides(matchCount){
+	for (const numPartides of Object.keys(matchCount).sort((a, b) => b - a)) {
+		const e1 = getRandom(matchCount[numPartides]);
+
+		console.log(e1);
+
+		for (const e of players) {
+			if (e.includes(e1)) {
+				return e;
+			}
+		}
+	}
+}
+
 
 function getRandom(array) {
 	return array.splice((Math.random() * array.length) | 0, 1)[0]
